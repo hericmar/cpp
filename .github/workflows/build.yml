@@ -22,6 +22,22 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
       - name: Create release
-        uses: ncipollo/release-action@v1
+        uses: actions/create-release@v1
+        id: create_release
         with:
-          artifacts: "assets,*HelloWorld*,LICENSE"
+          draft: true
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: build/Release/HelloWorld
+            asset_name: HelloWorld
+            asset_content_type: application/octet-stream
