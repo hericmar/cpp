@@ -8,36 +8,37 @@ permissions:
   contents: write
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
+  release:
+    name: Release
+    strategy:
+      matrix:
+        kind: ['Linux', 'Windows', 'MacOS']
+        include:
+          - kind: 'Linux'
+            os: ubuntu-latest
+          - kind: 'Windows'
+            os: windows-latest
+          - kind: 'MacOS'
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Install dependencies
         run: |
           sudo apt-get install -y \
             build-essential \
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
       - name: Build
-        run: cmake --build build --config Release
-      - name: Create release
-        uses: actions/create-release@v1
-        id: create_release
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+          zip -r I3T-${{ matrix.kind }}-${{ steps.version.outputs.version }}.zip build/Release
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
         with:
-          draft: true
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ github.ref }}
-          body_path: CHANGELOG.md
+          files: "I3T*.zip"
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: Upload artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: build/Release/HelloWorld
-            asset_name: HelloWorld
-            asset_content_type: application/octet-stream
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
