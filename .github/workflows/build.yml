@@ -24,6 +24,4 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref }}
-          artifacts: |
-            build/Release/MyApp
+          artifacts: "assets,*HelloWorld*,LICENSE"
