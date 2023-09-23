@@ -30,15 +30,20 @@ jobs:
         run: |
           sudo apt-get install -y build-essential \
 
-      - name: Build
+      - name: Build and create archive
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
-          zip -r I3T-${{ matrix.kind }}-${{ steps.version.outputs.version }}.zip LICENCE build/HelloWorld*
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            7z a -tzip I3T-${{ matrix.kind }}.zip build/HelloWorld*
+          else
+            zip -r I3T-${{ matrix.kind }}.zip LICENCE build/HelloWorld*
+          fi
 
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
+          draft: true
           files: "I3T*.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
