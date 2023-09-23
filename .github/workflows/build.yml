@@ -35,7 +35,7 @@ jobs:
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
+          if [ "${{ matrix.kind }}" == "Windows" ]; then
             7z a -tzip I3T-${{ matrix.kind }}.zip build/HelloWorld*
           else
             zip -r I3T-${{ matrix.kind }}.zip LICENCE build/HelloWorld*
